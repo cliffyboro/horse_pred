@@ -17,3 +17,4 @@ sys
 time
 warnings
 xgboost
+python=3.14
