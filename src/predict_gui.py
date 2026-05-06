@@ -1,11 +1,58 @@
-import streamlit as st
 import pandas as pd
 import numpy as np
 import json
 import sqlite3
-import joblib
 import warnings
+import os
+import requests
+import streamlit as st
+import joblib
 from pathlib import Path
+
+# 1. DYNAMIC PATHING
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODELS_DIR = BASE_DIR / "models"
+DB_DIR = BASE_DIR / "database"
+
+# Ensure directories exist
+MODELS_DIR.mkdir(parents=True, exist_ok=True)
+DB_DIR.mkdir(parents=True, exist_ok=True)
+
+# 2. GOOGLE DRIVE DOWNLOAD HELPER
+def download_from_drive(file_id, destination):
+    # This URL format bypasses the 'Preview' page for a direct stream
+    URL = "https://docs.google.com/uc?export=download&confirm=t"
+    session = requests.Session()
+    response = session.get(URL, params={'id': file_id}, stream=True)
+    
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(32768):
+            if chunk:
+                f.write(chunk)
+
+# 3. FILE MAP (Filename: Google Drive ID)
+FILES_TO_DOWNLOAD = {
+    "et_model.pkl": "1Y_wuhjrsHqZwATZ8vdrUkKEZSnagoFT3",
+    "lgb_model.pkl": "1Rk3FPsYAJJyb1HawNMmHP9noOUa2bxmU",
+    "rf_model.pkl": "12Jsb161nTdzLVLa5As7X-yucHAtbKfh7",
+    "scaler.pkl": "1jlUETq8rh_9NEwzyJlHQxfI9E19wtMyl",
+    "xgb_model.pkl": "1oO2fJVltWM3bX8A0A7R2QIXxjjBT1y6G",
+    "horse_racing.db": "1XQm-xtBB_pwKoWh_C-0gqxu8jAJpW169"
+}
+
+# 4. DOWNLOAD LOGIC
+def initial_setup():
+    for filename, drive_id in FILES_TO_DOWNLOAD.items():
+        # Determine if it goes in /models or /database
+        target_folder = DB_DIR if filename.endswith(".db") else MODELS_DIR
+        local_path = target_folder / filename
+        
+        if not local_path.exists():
+            with st.spinner(f"📥 Downloading {filename} from Cloud... Please wait."):
+                download_from_drive(drive_id, local_path)
+
+# Run setup
+initial_setup()
 
 # 1. SILENCE TECHNICAL CLUTTER
 warnings.filterwarnings("ignore", category=UserWarning)
