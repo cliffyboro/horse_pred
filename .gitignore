@@ -1,0 +1,10 @@
+# Large Data & Models
+models/
+*.pkl
+database/
+data/
+
+# Python files
+__pycache__/
+*.pyc
+.env
