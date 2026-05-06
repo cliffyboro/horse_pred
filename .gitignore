@@ -1,7 +1,8 @@
 # Large Data & Models
 models/
 *.pkl
-database/
+database/*
+!database/horse_racing_lite.db
 data/
 
 # Python files
